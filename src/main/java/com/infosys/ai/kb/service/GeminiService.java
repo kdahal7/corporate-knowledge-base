@@ -173,18 +173,19 @@ public class GeminiService {
         log.info("Using model: {}", huggingfaceModelName);
         log.info("API Key present: {}", huggingfaceApiKey != null && !huggingfaceApiKey.isEmpty());
 
-        // Format for FLAN-T5 model (simpler and faster)
+        // Format for Phi-3 model (Microsoft's small but powerful LLM)
         String prompt = String.format(
-            "Answer the question based on the context.\n\nContext: %s\n\nQuestion: %s\n\nAnswer:",
-            context.length() > 1000 ? context.substring(0, 1000) : context,
+            "<|user|>\nBased on this context, answer the question concisely.\n\nContext: %s\n\nQuestion: %s<|end|>\n<|assistant|>",
+            context.length() > 800 ? context.substring(0, 800) : context,
             question
         );
 
         // Hugging Face API request format
         JsonObject parameters = new JsonObject();
-        parameters.addProperty("max_new_tokens", 150);
+        parameters.addProperty("max_new_tokens", 200);
         parameters.addProperty("temperature", 0.7);
         parameters.addProperty("return_full_text", false);
+        parameters.addProperty("do_sample", true);
         
         JsonObject requestBody = new JsonObject();
         requestBody.addProperty("inputs", prompt);
