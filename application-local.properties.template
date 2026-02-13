@@ -1,0 +1,22 @@
+# Local Development Configuration
+# Copy this to application-local.properties and update with your credentials
+# Add application-local.properties to .gitignore (already done)
+
+# PostgreSQL Configuration - Update with your local database
+spring.datasource.url=jdbc:postgresql://localhost:5432/corporate_kb
+spring.datasource.username=postgres
+spring.datasource.password=your_password_here
+
+# OR Use Neon.tech (Free tier)
+# spring.datasource.url=jdbc:postgresql://YOUR-PROJECT.neon.tech:5432/YOUR-DB?sslmode=require
+# spring.datasource.username=YOUR-USERNAME
+# spring.datasource.password=YOUR-PASSWORD
+
+# Google Gemini API Configuration
+# Get your free API key from: https://makersuite.google.com/app/apikey
+gemini.api.key=YOUR-GEMINI-API-KEY-HERE
+
+# Development settings
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+logging.level.com.infosys.ai=DEBUG

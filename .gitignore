@@ -1,0 +1,80 @@
+# Compiled class files
+*.class
+target/
+
+# Log files
+*.log
+logs/
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Virtual machine crash logs
+hs_err_pid*
+
+# IDE specific files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.classpath
+.project
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# Gradle
+.gradle/
+build/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Application specific
+application-local.properties
+application-dev.properties
+application-prod.properties
+
+# Sensitive data
+*.env
+.env
+*.key
+*.pem
+
+# Uploaded documents (if storing locally)
+uploads/
+documents/
+
+# Database
+*.db
+*.sqlite
+
+# Node modules (if adding React build)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# React build
+build/
+dist/
+
+# Backup files
+*.bak
+*.swp
+*.tmp
+*~
