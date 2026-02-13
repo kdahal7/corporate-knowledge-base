@@ -19,7 +19,7 @@
 1. Click **"New +"** (top right)
 2. Select **"Web Service"**
 3. Connect your GitHub account if not already
-4. Select repository: **`kdahal7/semantic-log-analyzer`**
+4. Select repository: **`kdahal7/corporate-knowledge-base`**
 5. Click **"Connect"**
 
 ### Step 3: Configure Your Service
@@ -32,15 +32,9 @@ Fill in these settings:
 - **Root Directory**: (leave empty)
 
 **Build & Deploy Settings:**
-- **Runtime**: `Java`
-- **Build Command**: 
-  ```
-  mvn clean package -DskipTests
-  ```
-- **Start Command**: 
-  ```
-  java -Dserver.port=$PORT -jar target/corporate-knowledge-base-1.0.0.jar
-  ```
+- **Runtime**: `Docker`
+- **Dockerfile Path**: `Dockerfile` (auto-detected)
+- Build and Start commands are handled by Dockerfile automatically ✅
 
 **Plan:**
 - Select **"Free"** (750 hours/month)
@@ -103,8 +97,8 @@ When you push to GitHub:
 
 ### Build Fails?
 - Check Build Logs in Render dashboard
-- Most common: Java version mismatch
-- Solution: Ensure Java 17 is specified in `system.properties`
+- Most common: Docker build issues or dependency problems
+- Verify Dockerfile is in root directory of repo
 
 ### App Crashes?
 - Check Runtime Logs
