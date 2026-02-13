@@ -169,19 +169,21 @@ public class GeminiService {
         // Hugging Face Inference API endpoint
         String url = huggingfaceApiUrl + "/" + huggingfaceModelName;
 
-        // Concise prompt for Hugging Face models
+        log.info("Calling Hugging Face API at: {}", url);
+        log.info("Using model: {}", huggingfaceModelName);
+        log.info("API Key present: {}", huggingfaceApiKey != null && !huggingfaceApiKey.isEmpty());
+
+        // Format for FLAN-T5 model (simpler and faster)
         String prompt = String.format(
-            "<s>[INST] Based on the following context, answer the question directly and concisely. " +
-            "Extract only the specific information requested.\n\n" +
-            "Context: %s\n\n" +
-            "Question: %s [/INST]",
-            context, question
+            "Answer the question based on the context.\n\nContext: %s\n\nQuestion: %s\n\nAnswer:",
+            context.length() > 1000 ? context.substring(0, 1000) : context,
+            question
         );
 
         // Hugging Face API request format
         JsonObject parameters = new JsonObject();
-        parameters.addProperty("max_new_tokens", 100);
-        parameters.addProperty("temperature", 0.3);
+        parameters.addProperty("max_new_tokens", 150);
+        parameters.addProperty("temperature", 0.7);
         parameters.addProperty("return_full_text", false);
         
         JsonObject requestBody = new JsonObject();
@@ -203,17 +205,21 @@ public class GeminiService {
         try (Response response = httpClient.newCall(request).execute()) {
             String responseBody = response.body().string();
             
+            log.info("HF API Response Status: {}", response.code());
+            log.info("HF API Response Body: {}", responseBody.substring(0, Math.min(200, responseBody.length())));
+            
             if (!response.isSuccessful()) {
-                log.error("Hugging Face API error: {}", responseBody);
-                throw new IOException("Hugging Face API returned error: " + response.code());
+                log.error("Hugging Face API error ({}): {}", response.code(), responseBody);
+                throw new IOException("Hugging Face API returned error: " + response.code() + " - " + responseBody);
             }
 
             // Hugging Face returns array of responses
             JsonArray jsonResponse = gson.fromJson(responseBody, JsonArray.class);
             
-            if (jsonResponse.size() > 0) {
+            if (jsonResponse != null && jsonResponse.size() > 0) {
                 JsonObject firstResult = jsonResponse.get(0).getAsJsonObject();
                 String generatedText = firstResult.get("generated_text").getAsString();
+                log.info("Generated answer: {}", generatedText);
                 return generatedText.trim();
             }
             
@@ -222,58 +228,20 @@ public class GeminiService {
     }
     
     private String summarizeContext(String context) {
-        // Fallback extraction when API is unavailable
-        // Try to extract specific information using patterns
+        // Improved fallback: Return relevant context snippets instead of generic message
+        log.warn("Using fallback summarization - HF API unavailable");
         
-        String[] lines = context.split("\\n");
-        
-        // Look for CGPA/GPA
-        for (String line : lines) {
-            if (line.toLowerCase().contains("cgpa:") || line.toLowerCase().contains("gpa:")) {
-                // Extract just the CGPA value
-                java.util.regex.Pattern p = java.util.regex.Pattern.compile("(?i)cgpa[:\\s]+([0-9.]+)");
-                java.util.regex.Matcher m = p.matcher(line);
-                if (m.find()) {
-                    return "CGPA: " + m.group(1);
-                }
-                return extractCleanSentence(line, "cgpa");
-            }
+        if (context == null || context.trim().isEmpty()) {
+            return "I couldn't find relevant information in the knowledge base.";
         }
         
-        // Look for college/university
-        for (String line : lines) {
-            String lower = line.toLowerCase();
-            if (lower.contains("university") || lower.contains("college") || lower.contains("institute")) {
-                // Try to extract just the institution name
-                if (line.contains("Deemed")) {
-                    return extractCleanSentence(line, "university");
-                }
-                return extractCleanSentence(line, "university");
-            }
+        // Return first 500 characters of context as a basic answer
+        String summary = context.trim();
+        if (summary.length() > 500) {
+            summary = summary.substring(0, 500) + "...";
         }
         
-        // Look for email
-        for (String line : lines) {
-            if (line.contains("@") && line.contains(".com")) {
-                java.util.regex.Pattern p = java.util.regex.Pattern.compile("([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6})");
-                java.util.regex.Matcher m = p.matcher(line);
-                if (m.find()) {
-                    return "Email: " + m.group(1);
-                }
-            }
-        }
-        
-        // Look for phone
-        for (String line : lines) {
-            java.util.regex.Pattern p = java.util.regex.Pattern.compile("(\\+\\d{1,3}[\\s-]?\\d{10})");
-            java.util.regex.Matcher m = p.matcher(line);
-            if (m.find()) {
-                return "Phone: " + m.group(1);
-            }
-        }
-        
-        // Default: point to sources
-        return "Please check the source documents below for your answer.";
+        return "Based on the documents: " + summary + "\n\n(Note: AI summarization is currently unavailable. Showing raw context.)";
     }
     
     private String extractCleanSentence(String line, String keyword) {
